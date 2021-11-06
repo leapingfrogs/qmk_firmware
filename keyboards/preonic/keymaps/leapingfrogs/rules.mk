@@ -1,1 +1,4 @@
 SRC += muse.c
+MOUSEKEY_ENABLE = yes
+WPM_ENABLE = yes
+WPM_ALLOW_COUNT_REGRESSION = yes

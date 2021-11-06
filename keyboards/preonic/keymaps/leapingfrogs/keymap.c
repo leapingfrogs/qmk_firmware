@@ -23,7 +23,8 @@ enum preonic_layers {
   _DVORAK,
   _LOWER,
   _RAISE,
-  _ADJUST
+  _ADJUST,
+  _MOUSE
 };
 
 enum preonic_keycodes {
@@ -32,7 +33,8 @@ enum preonic_keycodes {
   DVORAK,
   LOWER,
   RAISE,
-  BACKLIT
+  BACKLIT,
+  WPM
 };
 
 const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
@@ -96,7 +98,7 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
   KC_GRV,  KC_1,    KC_2,    KC_3,    KC_4,    KC_5,    KC_6,    KC_7,    KC_8,    KC_9,    KC_0,    KC_MINS,
   KC_TAB,  KC_Q,    KC_W,    KC_F,    KC_P,    KC_G,    KC_J,    KC_L,    KC_U,    KC_Y,    KC_SCLN, KC_BSLS,
   KC_BSPC, KC_A,    KC_R,    KC_S,    KC_T,    KC_D,    KC_H,    KC_N,    KC_E,    KC_I,    KC_O,    KC_QUOT,
-  KC_LSFT, KC_Z,    KC_X,    KC_C,    KC_V,    KC_B,    KC_K,    KC_M,    KC_COMM, KC_DOT,  KC_SLSH, KC_RSFT,
+  KC_LSFT, CTL_T(KC_Z),    KC_X,    KC_C,    KC_V,    KC_B,    KC_K,    KC_M,    KC_COMM, KC_DOT,  CTL_T(KC_SLSH), KC_RSFT,
   KC_ESC,  KC_LCTL, KC_LALT, KC_LGUI, LOWER,   KC_SPC,  KC_ENT,  RAISE,   KC_LEFT, KC_DOWN, KC_UP,   KC_RGHT
 ),
 
@@ -152,7 +154,7 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
  * |------+------+------+------+------+------|------+------+------+------+------+------|
  * |      |Voice-|Voice+|Mus on|MusOff|MidiOn|MidOff|      |      |      |      |      |
  * |------+------+------+------+------+------+------+------+------+------+------+------|
- * |RGB Tg|RGB Fw|RGB Rv|      |      |             |      |      |      |      |      |
+ * |RGB Tg|RGB Fw|RGB Rv|      |      |             |      |      | WPM  |      |TG MSE|
  * `-----------------------------------------------------------------------------------'
  */
 [_ADJUST] = LAYOUT_preonic_grid(
@@ -160,11 +162,34 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
   _______, RESET,   DEBUG,   _______, _______, _______, _______, TERM_ON, TERM_OFF,_______, _______, KC_DEL,
   _______, _______, MU_MOD,  AU_ON,   AU_OFF,  AG_NORM, AG_SWAP, QWERTY,  COLEMAK, DVORAK,  _______, _______,
   _______, MUV_DE,  MUV_IN,  MU_ON,   MU_OFF,  MI_ON,   MI_OFF,  _______, _______, _______, _______, _______,
-  RGB_TOG, RGB_MODE_FORWARD, RGB_MODE_REVERSE, _______, _______, _______, _______, _______, _______, _______, _______, _______
+  RGB_TOG, RGB_MODE_FORWARD, RGB_MODE_REVERSE, _______, _______, _______, _______, _______, _______, WPM, _______, TG(_MOUSE)
+),
+
+/* Mouse / Numpad
+ * ,-----------------------------------------------------------------------------------.
+ * |      |      |      |      |      |      |      |NumLck|   /  |   *  |   -  |      |
+ * |------+------+------+------+------+------+------+------+------+------+------+------|
+ * |      |      | M Up |      | Sc Up|      |      |   7  |   8  |   9  |   +  |      |
+ * |------+------+------+------+------+-------------+------+------+------+------+------|
+ * |      | M Lt | M Dn | M Rt | Sc Dn|      |      |   4  |   5  |   6  |   +  |      |
+ * |------+------+------+------+------+------|------+------+------+------+------+------|
+ * |      |      |      |      |      |      |      |   1  |   2  |   3  | Ent  |      |
+ * |------+------+------+------+------+------|------+------+------+------+------+------|
+ * |      |      |      |      |      |      |      |   0  |   0  |   .  | Ent  |TG MSE|
+ * `-----------------------------------------------------------------------------------'
+ */
+[_MOUSE] = LAYOUT_preonic_grid(
+  _______,   _______,   _______,   _______,   _______,   _______,   _______,   KC_NLCK, KC_PSLS,   KC_PAST,  KC_PMNS,  _______,
+  _______,   _______,   KC_MS_U,   _______,   KC_WH_U,   _______,   _______,   KC_P7,   KC_P8,     KC_P9,    KC_PPLS,  _______,
+  _______,   KC_MS_L,   KC_MS_D,   KC_MS_R,   KC_WH_D,   _______,   _______,   KC_P4,   KC_P5,     KC_P6,    KC_PPLS,  _______,
+  _______,   KC_BTN1,   KC_BTN2,   KC_BTN3,   _______,   _______,   _______,   KC_P1,   KC_P2,     KC_P3,    KC_PENT,  _______,
+  _______,   _______,   _______,   _______,   _______,   _______,   _______,   KC_P0,   KC_P0,     KC_PDOT,  KC_PENT,  TG(_MOUSE)
 )
 
 
 };
+
+char wpm_str[10] = "";
 
 bool process_record_user(uint16_t keycode, keyrecord_t *record) {
   switch (keycode) {
@@ -223,6 +248,16 @@ bool process_record_user(uint16_t keycode, keyrecord_t *record) {
             #ifdef __AVR__
             writePinHigh(E6);
             #endif
+          }
+          return false;
+          break;
+        case WPM:
+          if (record->event.pressed) {
+            // itoa(get_current_wpm(), wpm_str, 10);
+            // char wpm_str[10] = "";
+            // uint8_t wpm = get_current_wpm();
+            sprintf(wpm_str, "Wpm: %03d\n", get_current_wpm());
+            send_string(wpm_str);
           }
           return false;
           break;
