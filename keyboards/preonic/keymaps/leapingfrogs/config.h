@@ -17,6 +17,7 @@
 #pragma once
 
 #define PERMISSIVE_HOLD
+#define IOS_DEVICE_ENABLE
 
 #ifdef AUDIO_ENABLE
 #    define STARTUP_SONG SONG(PREONIC_SOUND)
